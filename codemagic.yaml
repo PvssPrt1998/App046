@@ -1,75 +1,60 @@
 workflows:
-    ios-workflow:
-      name: iOS Workflow1
-      environment:
-        groups:
-        # Add the group environment variables in Codemagic UI (either in Application/Team variables) - https://docs.codemagic.io/variables/environment-variable-groups/
-          - app_store_credentials # <-- (APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY)
-            # APP_STORE_CONNECT_ISSUER_ID <-- Put your App Store Connect Issuer Id here 
-            # APP_STORE_CONNECT_KEY_IDENTIFIER <-- Put your App Store Connect Key Identifier here 
-            # APP_STORE_CONNECT_PRIVATE_KEY <-- Put your App Store Connect Private Key here
-            # See the following link for more details - https://docs.codemagic.io/code-signing-yaml/signing-ios/
-            # https://appstoreconnect.apple.com/access/api
-          - certificate_credentials # <-- (CERTIFICATE_PRIVATE_KEY - Put your Certificate Private Key here)
-          #- other
-        vars:
-          XCODE_PROJECT: "App046.xcodeproj" # <-- Put the name of your workspace here.
-          XCODE_SCHEME: "App046" # <-- Put the name of your scheme here.
-          BUNDLE_ID: "com.andrai.seahalart" # <-- Put your Bundle Id here.
-          APP_STORE_APPLE_ID: 6740915199 # <-- Put the app id number here. This is found in App Store Connect > App > General > App Information
-        xcode: latest # <-- set to specific version e.g. 14.3, 15.0 to avoid unexpected updates.
-        cocoapods: default
-      triggering:
-        events:
-          - push
-          - tag
-          - pull_request
-        branch_patterns:
-          - pattern: 'develop'
-            include: true
-            source: true
-      scripts:
-        - name: Set up keychain to be used for codesigning using Codemagic CLI 'keychain' command
-          script: |
-            keychain initialize
-        - name: Fetch signing files
-          script: |
-            app-store-connect fetch-signing-files $BUNDLE_ID --type IOS_APP_STORE --platform=IOS --create --certificate-key-password='123456'
-        - name: Use system default keychain
-          script: |
-            keychain add-certificates
-        - name: Set up code signing settings on Xcode project
-          script: |
-            xcode-project use-profiles
-        - name: Increment build number
-          script: |
-            # agvtool new-version -all $(($BUILD_NUMBER + 1))
-            agvtool new-version -all $(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID") + 1))
-        - name: Build ipa for distribution
-          script: |
-            xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
-      artifacts:
-        - build/ios/ipa/*.ipa
-        - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
-      publishing:
-        app_store_connect:   # https://docs.codemagic.io/publishing-yaml/distribution              
-            api_key: $APP_STORE_CONNECT_PRIVATE_KEY         # Contents of the API key, can also reference environment variable such as $APP_STORE_CONNECT_PRIVATE_KEY
-            key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER       # Alphanumeric value that identifies the API key, can also reference environment variable such as $APP_STORE_CONNECT_KEY_IDENTIFIER
-            issuer_id: $APP_STORE_CONNECT_ISSUER_ID        # Alphanumeric value that identifies who created the API key, can also reference environment variable such as $APP_STORE_CONNECT_ISSUER_ID
-            submit_to_testflight: true                     # Optional boolean, defaults to false. Whether or not to submit the uploaded build to TestFlight beta review. Required for distributing to beta groups. Note: This action is performed during post-processing.
-            # beta_groups:                                  # Specify the names of beta tester groups that will get access to the build once it has passed beta review. 
-            #       - group name 1
-            #       - group name 2
-        email:
-            recipients:
-              - lannister1977@gmail.com
-              - lannister1977@gmail.com
-            notify:
-              success: true
-              failure: true
-        slack:
-            channel: '#builds'
-            notify_on_build_start: true    # To receive a notification when a build starts
-            notify:
-              success: false               # To not receive a notification when a build succeeds
-              failure: false               # To not receive a notification when a build fails
+  ios-native-quick-start:
+    name: iOS Native
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    integrations:
+      app_store_connect: App046
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: "com.andrai.seahalart"
+      vars:
+        BUNDLE_ID: "com.andrai.seahalart"
+        XCODE_PROJECT: "App046.xcodeproj"
+        XCODE_SCHEME: "App046"
+        APP_STORE_APPLE_ID: 6740915199
+      xcode: latest # <-- set to specific version e.g. 14.3, 15.0 to avoid unexpected updates.
+    scripts:
+      - name: Resolve Swift Package Manager dependencies
+        script: |
+          xcodebuild -resolvePackageDependencies \
+            -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME"
+      - name: Set up provisioning profiles settings on Xcode project
+        script: xcode-project use-profiles
+      - name: Increment build number
+        script: |
+          cd $CM_BUILD_DIR
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+      - name: Build ipa for distribution
+        script: |
+          xcode-project build-ipa \
+            --project "$CM_BUILD_DIR/$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      email:
+        recipients:
+          - Lannister1977@gmail.com
+        notify:
+          success: true
+          failure: false
+      app_store_connect:
+        auth: integration
+
+        # Configuration related to TestFlight (optional)
+        # Note: This action is performed during post-processing.
+        submit_to_testflight: true
+        beta_groups: # Specify the names of beta tester groups that will get access to the build once it has passed beta review.
+          - group name 1
+          - group name 2
+
+        # Configuration related to App Store (optional)
+        # Note: This action is performed during post-processing.
+        submit_to_app_store: false
