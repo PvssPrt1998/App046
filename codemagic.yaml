@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     integrations:
-      app_store_connect: App046
+      app_store_connect: KissHugAIAppProfile
     environment:
       ios_signing:
         distribution_type: app_store
@@ -40,7 +40,8 @@ workflows:
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
     publishing:
       email:
-        recipients: "Lannister1977@gmail.com"
+        recipients:
+         - Lannister1977@gmail.com
         notify:
           success: true
           failure: false
