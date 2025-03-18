@@ -40,8 +40,7 @@ workflows:
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
     publishing:
       email:
-        recipients:
-          - Lannister1977@gmail.com
+        recipients: "Lannister1977@gmail.com"
         notify:
           success: true
           failure: false
