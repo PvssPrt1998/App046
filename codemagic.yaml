@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     integrations:
-      app_store_connect: KissHugAIAppProfile
+      app_store_connect: FacePhotoMakerProfile
     environment:
       ios_signing:
         distribution_type: app_store
@@ -41,7 +41,7 @@ workflows:
     publishing:
       email:
         recipients:
-         - Lannister1977@gmail.com
+          - lannister1977@gmail.com
         notify:
           success: true
           failure: false
