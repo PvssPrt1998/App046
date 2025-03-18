@@ -1,4 +1,5 @@
 import SwiftUI
+import ApphudSDK
 import StoreKit
 
 
@@ -111,21 +112,19 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             Button {
-                if let url = URL(string: "https://docs.google.com/forms/d/e/1FAIpQLSd1OW3z5XvJJDVoMzjjMA-yw7BfVx_eW33ZoZpO9_c6i01e6g/viewform?usp=dialog") {
-                    openURL(url)
-                }
+                contact()
             } label: {
                 button(imageTitle: "text.bubble", title: "Contact us")
             }
             Button {
-                if let url = URL(string: "https://docs.google.com/forms/d/e/1FAIpQLSd1OW3z5XvJJDVoMzjjMA-yw7BfVx_eW33ZoZpO9_c6i01e6g/viewform?usp=dialog") {
+                if let url = URL(string: "https://docs.google.com/document/d/1WadaQ4F3HP2zWYwSrrc2zKBy25JzpB1LdSGUkbWRsfI/edit?usp=sharing") {
                     openURL(url)
                 }
             } label: {
                 button(imageTitle: "folder.badge.person.crop", title: "Privacy Policy")
             }
             Button {
-                if let url = URL(string: "https://docs.google.com/forms/d/e/1FAIpQLSd1OW3z5XvJJDVoMzjjMA-yw7BfVx_eW33ZoZpO9_c6i01e6g/viewform?usp=dialog") {
+                if let url = URL(string: "https://docs.google.com/document/d/1zzthc69ORWOOae584aWP82cbc9Le3264MO9M-6_X1o0/edit?usp=sharing") {
                     openURL(url)
                 }
             } label: {
@@ -134,8 +133,33 @@ struct SettingsView: View {
         }
     }
     
+    func contact() {
+        var versionText = ""
+        
+        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+            versionText = "App Version: \(version)"
+        } else {
+            versionText = "App Version: Unknown"
+        }
+        
+        let email = "carlitacipriani253@gmail.com"
+        let subject = "Support Request" // Тема письма
+        let body = "App ver: \(versionText), User id - \(Apphud.userID())"
+
+        let emailURL = "mailto:\(email)?subject=\(subject)&body=\(body)"
+        
+        if let encodedURL = emailURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+           let url = URL(string: encodedURL) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            } else {
+                //showAlert(title: "Сan't open Mail app", message: "")
+            }
+        }
+    }
+    
     func share() {
-        let urlStr = "https://apps.apple.com/app/id6739883934"
+        let urlStr = "https://apps.apple.com/app/id6740915199"
         guard let urlShare = URL(string: urlStr)  else { return }
         let activityVC = UIActivityViewController(activityItems: [urlShare], applicationActivities: nil)
         if #available(iOS 15.0, *) {

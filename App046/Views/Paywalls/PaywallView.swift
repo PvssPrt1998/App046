@@ -81,7 +81,7 @@ struct PaywallView: View {
             
             HStack(spacing: 12) {
                 Button {
-                    if let url = URL(string: "https://docs.google.com/document/d/1Bzr1G22pUKtzDY6VxoiaMAHtEqgTSpYbuXhtMZ4I-Cw/edit?usp=sharing") {
+                    if let url = URL(string: "https://docs.google.com/document/d/1WadaQ4F3HP2zWYwSrrc2zKBy25JzpB1LdSGUkbWRsfI/edit?usp=sharing") {
                         openURL(url)
                     }
                 } label: {
@@ -104,7 +104,7 @@ struct PaywallView: View {
                 }
                 Spacer()
                 Button {
-                    if let url = URL(string: "https://docs.google.com/document/d/13JXlS7pZorpyb5H5V6nCiATAVDWDyenf0wSs3KRGQf4/edit?usp=sharing") {
+                    if let url = URL(string: "https://docs.google.com/document/d/1zzthc69ORWOOae584aWP82cbc9Le3264MO9M-6_X1o0/edit?usp=sharing") {
                         openURL(url)
                     }
                 } label: {
@@ -116,6 +116,8 @@ struct PaywallView: View {
             .padding(EdgeInsets(top: 16, leading: 0, bottom: 12, trailing: 0))
         }
     }
+    
+    
     
     private var title: some View {
         Text("Unreal videos with PRO")
